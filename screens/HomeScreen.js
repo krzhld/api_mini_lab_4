@@ -16,7 +16,11 @@ const HomeScreen = ({navigation}) => {
             navigation.replace("Login");
         });
     };
-    // 
+
+    const goToUserProfile = () => { navigation.navigate("UserProfile")};
+
+    const goToSearchScreen = () => { navigation.navigate("SearchScreen")};
+
     useEffect(() => {
         const q = query(collection(db, "chats"), where("chatName", '!=', ""));
         const unsubscribe = onSnapshot(q, (querySnaphots) => {
@@ -42,7 +46,7 @@ const HomeScreen = ({navigation}) => {
             // Задаем разметку частей слева и справа от заголовка
             headerLeft: () => (
                 <View style={{ marginLeft: 20 }}>
-                    <TouchableOpacity activeOpacity={0.5} onPress={()=>alert("Navigate to UserProfileScreen")}>
+                    <TouchableOpacity activeOpacity={0.5} onPress={goToUserProfile}>
                         <Avatar rounded source={{ uri: auth?.currentUser?.photoURL }}/>
                     </TouchableOpacity>
                 </View>
@@ -57,7 +61,7 @@ const HomeScreen = ({navigation}) => {
                     <TouchableOpacity onPress={() => navigation.navigate("AddChat")} activeOpacity={0.5}>
                         <SimpleLineIcons name='pencil' size={24} color="black"/>
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={()=>alert("Navigate to SearchScreen")} activeOpacity={0.5}>
+                    <TouchableOpacity onPress={goToSearchScreen} activeOpacity={0.5}>
                         <Ionicons name='search' size={24} color="black"/>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={signOut} activeOpacity={0.5}>

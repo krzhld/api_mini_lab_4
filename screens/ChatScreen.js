@@ -4,12 +4,15 @@ import { Avatar } from 'react-native-elements';
 import { deafultPicURL } from '../utils';
 import { AntDesign, FontAwesome, Ionicons } from "@expo/vector-icons";
 import { StatusBar } from 'expo-status-bar';
-import { addDoc, collection, onSnapshot, serverTimestamp, query, orderBy } from 'firebase/firestore';
+import { addDoc, collection, onSnapshot, serverTimestamp, query, orderBy, deleteDoc, doc} from 'firebase/firestore';
 import { auth, db } from '../firebase';
+import { MaterialIcons, SimpleLineIcons, Fontisto } from '@expo/vector-icons';
 
 const ChatScreen = ( { navigation, route }) => {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
+  const [countLike, setCountLike] = useState(0);
+  const [countDislike, setCountDislike] = useState(0);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -65,6 +68,20 @@ const ChatScreen = ( { navigation, route }) => {
    }).catch((error) => alert(error.message))
   };
 
+
+  const deleteMessage = (id) => {
+    const docD = doc(db, "chats", route.params.id, "messages", id);
+    deleteDoc(docD).then(() => {
+      console.log("Entire Document has been deleted successfully.")
+  })
+  .catch(error => {
+      console.log(error);
+  })
+  }
+
+  const onPressLike = () => setCountLike(countLike + 1);
+  const onPressDislike = () => setCountDislike(countDislike + 1);
+
   useLayoutEffect(() => {
         const q = query(collection(db, "chats", route.params.id, "messages"), 
         orderBy("timestamp", "asc"));
@@ -108,11 +125,26 @@ const ChatScreen = ( { navigation, route }) => {
                   right={-5}
                   size={30}/>
                   <Text style={styles.userText}>{data.message}</Text>
+                  <TouchableOpacity onPress={deleteMessage} activeOpacity={0.5}>
+                        <MaterialIcons name='delete' size={10} color="black"/>
+                    </TouchableOpacity>
                 </View>
              ) : (
                 <View key={id} style={styles.senderMessage}>
                   <Text style={styles.senderText}>{data.message}</Text>
                   <Text style={styles.senderName}>{data.displayName}</Text>
+                  <TouchableOpacity onPress={onPressLike} activeOpacity={0.5}>
+                      <Fontisto name="like" size={10} color="white" />
+                    </TouchableOpacity>
+                    <Text style={styles.countText}>
+          {countLike || null}
+        </Text>
+                    <TouchableOpacity onPress={onPressDislike} activeOpacity={0.5}>
+                      <Fontisto name="dislike" size={10} color="white" />
+                    </TouchableOpacity>
+                    <Text style={styles.countText}>
+          {countDislike || null}
+        </Text>
                   <Avatar rounded 
                   source={{uri: data.photoUrl}}
                   // WEB
