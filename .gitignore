@@ -13,3 +13,5 @@ firebase-credentials.js
 
 # macOS
 .DS_Store
+
+.vscode
