@@ -1,16 +1,20 @@
-import { SafeAreaView, ScrollView, StyleSheet } from 'react-native';
-import { Input } from 'react-native-elements';
-import React, { useEffect, useState } from 'react';
+import { SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Avatar, Input } from 'react-native-elements';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import ChatListItem from '../components/ChatListItem';
-import { db } from '../firebase';
+import { Ionicons, SimpleLineIcons } from '@expo/vector-icons'
+import { auth, db } from '../firebase';
 import { collection, onSnapshot, where, query } from 'firebase/firestore';
 
 const SearchScreen = ({ navigation }) => {
+
+    
     const [chats, setChats] = useState([]);
-    const [input, setInput] = useState('');
+    const [input, setInput] = useState("");
+
 
     useEffect(() => {
-        const q = query(collection(db, "chats"), where("chatName", '==', input));
+        const q = query(collection(db, "chats"), where("chatName", ">=", input));
         const unsubscribe = onSnapshot(q, (querySnaphots) => {
             const chats = [];
             querySnaphots.forEach((doc) => {
@@ -25,14 +29,17 @@ const SearchScreen = ({ navigation }) => {
         return unsubscribe;
     }, [])
 
+   
+
     const enterChat = (id, chatName) => {
         navigation.navigate("Chat", {id, chatName,})
     }
 
+
     return (
         <SafeAreaView>
-            <Input placeholder='Search chat' value={input} 
-      onChangeText={(text) => setInput(text)}/>
+            <Input placeholder='Search chat'
+      onChangeText={(input) => setInput(input)}/>
       
         <ScrollView style={styles.container}>
             {chats.map( ({id, data: { chatName }}) => (

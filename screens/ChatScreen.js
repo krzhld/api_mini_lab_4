@@ -4,15 +4,14 @@ import { Avatar } from 'react-native-elements';
 import { deafultPicURL } from '../utils';
 import { AntDesign, FontAwesome, Ionicons } from "@expo/vector-icons";
 import { StatusBar } from 'expo-status-bar';
-import { addDoc, collection, onSnapshot, serverTimestamp, query, orderBy, deleteDoc, doc} from 'firebase/firestore';
+import { addDoc, collection, onSnapshot, serverTimestamp, query, orderBy, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import { MaterialIcons, SimpleLineIcons, Fontisto } from '@expo/vector-icons';
+
 
 const ChatScreen = ( { navigation, route }) => {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
-  const [countLike, setCountLike] = useState(0);
-  const [countDislike, setCountDislike] = useState(0);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -62,12 +61,13 @@ const ChatScreen = ( { navigation, route }) => {
       message: input,
       displayName: auth.currentUser.displayName,
       email: auth.currentUser.email,
-      photoUrl: auth.currentUser.photoURL
+      photoUrl: auth.currentUser.photoURL,
+      countLikes: 0,
+      countDislikes: 0
    }).then(() => {
       setInput("");
    }).catch((error) => alert(error.message))
   };
-
 
   const deleteMessage = (id) => {
     const docD = doc(db, "chats", route.params.id, "messages", id);
@@ -78,9 +78,26 @@ const ChatScreen = ( { navigation, route }) => {
       console.log(error);
   })
   }
+  
+  const onPressLike = (id) => {
+    const docD = doc(db, "chats", route.params.id, "messages", id);
+    updateDoc(docD, {countLikes: countLikes+1}).then(() => {
+      console.log("Entire Document has been updated successfully.")
+  })
+  .catch(error => {
+      console.log(error);
+  })
 
-  const onPressLike = () => setCountLike(countLike + 1);
-  const onPressDislike = () => setCountDislike(countDislike + 1);
+  }
+  const onPressDislike = (id) => {
+    const docD = doc(db, "chats", route.params.id, "messages", id);
+    updateDoc(docD, {countDislikes: countDislikes+1}).then(() => {
+      console.log("Entire Document has been updated successfully.")
+  })
+  .catch(error => {
+      console.log(error);
+  })
+  }
 
   useLayoutEffect(() => {
         const q = query(collection(db, "chats", route.params.id, "messages"), 
@@ -95,6 +112,10 @@ const ChatScreen = ( { navigation, route }) => {
             });
             setMessages(messages);
             console.log(messages);
+            setCountLike(countLikes);
+            console.log(countLikes);
+            setCountDislike(countDislikes);
+            console.log(countDislikes);
         });
         return unsubscribe;
   }, [route]);
@@ -125,7 +146,7 @@ const ChatScreen = ( { navigation, route }) => {
                   right={-5}
                   size={30}/>
                   <Text style={styles.userText}>{data.message}</Text>
-                  <TouchableOpacity onPress={deleteMessage} activeOpacity={0.5}>
+                  <TouchableOpacity onPress={deleteMessage(id)} activeOpacity={0.5}>
                         <MaterialIcons name='delete' size={10} color="black"/>
                     </TouchableOpacity>
                 </View>
@@ -133,17 +154,17 @@ const ChatScreen = ( { navigation, route }) => {
                 <View key={id} style={styles.senderMessage}>
                   <Text style={styles.senderText}>{data.message}</Text>
                   <Text style={styles.senderName}>{data.displayName}</Text>
-                  <TouchableOpacity onPress={onPressLike} activeOpacity={0.5}>
+                  <TouchableOpacity onPress={onPressLike(id)} activeOpacity={0.5}>
                       <Fontisto name="like" size={10} color="white" />
                     </TouchableOpacity>
                     <Text style={styles.countText}>
-          {countLike || null}
+          {data.countLikes}
         </Text>
-                    <TouchableOpacity onPress={onPressDislike} activeOpacity={0.5}>
+                    <TouchableOpacity onPress={onPressDislike(id)} activeOpacity={0.5}>
                       <Fontisto name="dislike" size={10} color="white" />
                     </TouchableOpacity>
                     <Text style={styles.countText}>
-          {countDislike || null}
+          {data.countDislikes}
         </Text>
                   <Avatar rounded 
                   source={{uri: data.photoUrl}}
